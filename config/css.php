@@ -1,5 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
-
+<?php
 $config['directory'] = 'views/assets/css';
 
 $config['cache'] = IN_PRODUCTION ? 'static' : FALSE;

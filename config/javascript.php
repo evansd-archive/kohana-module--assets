@@ -1,5 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
-
+<?php
 $config['directory'] = 'javascript';
 
 if( ! IN_PRODUCTION) // leave JS uncached and uncompressed while in development

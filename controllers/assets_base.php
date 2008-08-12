@@ -1,5 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
-
+<?php
 abstract class Assets_Base_Controller extends Controller { // abstract because this class should never be instantiated, only subclassed
 	
 	/* caching options:
