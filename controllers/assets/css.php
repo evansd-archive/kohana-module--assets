@@ -28,14 +28,15 @@ class CSS_Controller extends Assets_Base_Controller {
 	
 	
 	
-	public function _remap()
+	public function __call($method, $args)
 	{
 		// concat all the arguments into a filename
-		$path = join('/', $this->uri->argument_array());
+		array_unshift($args, $method);
+		$path = join('/', $args);
 		
 		// strip the extension from the filename
 		$path = substr($path, 0, -strlen($this->extension) -1);
-		
+
 		// find the file, or display 404
 		$file = Kohana::find_file($this->directory, $path, FALSE, $this->extension) or Kohana::show_404();
 		
