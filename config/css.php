@@ -1,5 +1,5 @@
 <?php
-$config['directory'] = 'views/assets/css';
+$config['directory'] = 'css';
 
 $config['cache'] = IN_PRODUCTION ? 'static' : FALSE;
 
