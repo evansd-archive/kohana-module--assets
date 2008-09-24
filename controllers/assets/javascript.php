@@ -54,6 +54,7 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		switch($config['type'])
 		{
 			case 'packer':
+				include_once Kohana::find_file('vendor', 'JavaScriptPacker');
 				$packer = new JavaScriptPacker($data, $config['level']);
 				return $packer->pack();
 		}
