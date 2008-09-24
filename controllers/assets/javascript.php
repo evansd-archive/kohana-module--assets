@@ -55,8 +55,15 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		{
 			case 'packer':
 				include_once Kohana::find_file('vendor', 'JavaScriptPacker');
-				$packer = new JavaScriptPacker($data, $config['level']);
+				$packer = new JavaScriptPacker($data, empty($config['level']) ? 'Normal' : $config['level']);
 				return $packer->pack();
+			
+			case 'jsmin':
+				include_once Kohana::find_file('vendor', 'JSMin');
+				return JSMin::minify($data);
+			
+			default:
+				throw new Kohana_User_Exception('Unknown Javascript Compression Type', '');
 		}
 	}
 	
