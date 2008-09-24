@@ -54,7 +54,8 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		switch($config['type'])
 		{
 			case 'packer':
-				return JavaScriptPacker($data, $config['level']);
+				$packer = new JavaScriptPacker($data, $config['level']);
+				return $packer->pack();
 		}
 	}
 	
