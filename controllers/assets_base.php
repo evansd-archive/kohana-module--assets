@@ -79,11 +79,15 @@ abstract class Assets_Base_Controller extends Controller { // abstract because t
 				$ER = error_reporting(0);
 				
 				// attempt to make, recursively, all required directories
-				mkdir($dir, 0777, TRUE);
+				mkdir($dir, 0775, TRUE);
 				
 				if(is_dir($dir) AND ! file_exists($path))
 				{
-					file_put_contents($path, Event::$data);
+					if (file_put_contents($path, Event::$data))
+					{
+						 // read and write for owner and group, read for the rest
+						chmod($path, 0664);
+					}
 				}
 				
 				// Turn error reporting back on
