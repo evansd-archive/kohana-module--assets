@@ -1,20 +1,33 @@
 <?php
 class JavaScript_Controller extends Assets_Base_Controller {
 	
-	// the assets controller will figure this out from the extension, but we might as well save it the trouble
+	// The assets controller will figure this out from the
+	// extension, but we might as well save it the trouble
 	public $content_type = 'application/x-javascript';
 	
-	// directory where javascript files are stored, relative to APPROOT
+	// Directory where javascript files are stored, relative to APPROOT
 	public $directory = 'javascript';
 	
-	// variables to be available to any PHP code embedded in the JS files e.g., location of shared libraries
+	// Variables to be available to any PHP code embedded
+	// in the JS files e.g., a $debug flag
 	public $vars = array();
 	
-	// compression settings - compression off by default
+	// Compression settings - off by default
 	public $compress = FALSE;
 	
-	// config file to load
+	// Config file to load
 	public $config_file = 'javascript';
+	
+	// Whether to use Kohana's cascading filesystem to
+	// attempt to find the requested file, or just to look
+	// in the application directory.
+	//
+	// You may wish to turn this off when in production to prevent
+	// people requesting random files from your Javascript modules.
+	//
+	// Note that calls to requires() and assumes() ALWAYS use the
+	// cascading filesystem.
+	public $cascade_request = TRUE;
 	
 	
 	
@@ -32,15 +45,30 @@ class JavaScript_Controller extends Assets_Base_Controller {
 	
 	public function __call($method, $args)
 	{
-		// concat all the arguments into a filename
+		// Concat all the arguments into a filepath
 		array_unshift($args, $method);
 		$path = join('/', $args);
 		
-		// strip the extension from the filename
-		$path = substr($path, 0, -strlen($this->extension) -1);
+		if ($this->cascade_request)
+		{
+			// Strip the extension from the filepath
+			$path = substr($path, 0, -strlen($this->extension) -1);
+			
+			// Search for file using cascading file system
+			$file = Kohana::find_file($this->directory, $path, FALSE, $this->extension);
+		}
+		else
+		{
+			// Check if the file exists in the application folder
+			if ( ! is_file($file = APPPATH.$this->directory.'/'.$path))
+			{
+				$file = FALSE;
+			}
+			
+		}
 		
-		// find the file, or display 404
-		$file = Kohana::find_file($this->directory, $path, FALSE, $this->extension) or Event::run('system.404');
+		// If file not found then display 404
+		if( ! $file) Event::run('system.404');
 		
 		// Load the view in the controller for access to $this
 		$output = Kohana::$instance->_kohana_load_view($file, $this->vars);
