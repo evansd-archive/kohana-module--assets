@@ -19,8 +19,10 @@ class CSS_Controller extends Javascript_Controller {
 	{
 		switch($config === TRUE ? 'strip' : $config['type'])
 		{
-			case 'strip': // Pilfered from the Kohana media module: controllers/media.php
-			
+			case 'strip': 
+				// Borrowed from the old Kohana media module:
+				// http://code.google.com/p/kohanamodules/source/browse/tags/2.2/media/controllers/media.php
+				
 				// Remove comments
 				$data = preg_replace('~/\*[^*]*\*+([^/][^*]*\*+)*/~', '', $data);
 

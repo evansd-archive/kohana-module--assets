@@ -1,20 +1,34 @@
 <?php
-$config['directory'] = 'javascript';
 
-if( ! IN_PRODUCTION) // leave JS uncached and uncompressed while in development
+// While in development ...
+if ( ! IN_PRODUCTION)
 {
+	// Don't cache server-side
 	$config['cache'] = FALSE;
+	
+	// Don't allow clients to cache
+	$config['expiry_time'] = 0;
+	
+	// Don't compress
 	$config['compress'] = FALSE;
-	$config['expiry_time'] = FALSE;
+	
 }
+
+// While in production ...
 else
 {
-	$config['cache'] = 'static';
+	// Cache as a static file in DOCROOT/assets/javascript
+	$config['cache'] = 'static'; 
+	
+	// Cache using Kohana's Cache library
+	// $config['cache'] = TRUE; 
+	
+	// Clients should cache for 30 mins
+	$config['expiry_time'] = 1800;
 	
 	$config['compress'] = array(
-		
-		'type' => 'packer',
-		'level' => 'Normal',
-		
+		'type' => 'jsmin' // - Reasonably safe, reasonably good compression
+		// 'type' => 'packer' // - Good compression, but careful with your semi-colons
+		// 'type' => 'yuicompressor' // - The best and safest compression, but requires Java
 	);
 }
