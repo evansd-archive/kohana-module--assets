@@ -135,7 +135,6 @@ class JavaScript_Controller extends Assets_Base_Controller {
 				return $packer->pack();
 				
 			case 'yuicompressor':
-			
 				$options = isset($config['options']) ? $config['options'] : '';
 				return yuicompressor::compress($data, 'js', $options);
 				

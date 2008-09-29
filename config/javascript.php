@@ -17,6 +17,10 @@ if ( ! IN_PRODUCTION)
 // While in production ...
 else
 {
+	// Allow only files in APPPATH/javascript to be requested directly
+	// Calls to requires() and assumes() will still cascade in the normal way
+	$config['cascade_request'] = FALSE;
+	
 	// Cache as a static file in DOCROOT/assets/javascript
 	$config['cache'] = 'static'; 
 	
