@@ -1,6 +1,6 @@
 <?php
 // Kohana::__autoload can't figure this out by itself
-include_once Kohana::find_file('controllers/assets', 'Javascript', TRUE);
+include_once Kohana::find_file('controllers/assets', 'javascript', TRUE);
 
 class CSS_Controller extends Javascript_Controller {
 	

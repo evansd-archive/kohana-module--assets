@@ -118,7 +118,7 @@ class JavaScript_Controller extends Assets_Base_Controller {
 					}
 				}
 				
-				return yuicompressor::compress($data, $options)
+				return yuicompressor::compress($data, $options);
 				
 			
 			default:
