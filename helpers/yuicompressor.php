@@ -1,13 +1,13 @@
 <?php
 class yuicompressor
 {
-	public static function compress($data, $options = '')
+	public static function compress($data, $type = 'js', $options = '')
 	{
 		// Find the YUI Compressor JAR file
 		$yui = Kohana::find_file('vendor', 'yuicompressor', TRUE, 'jar');
 		
 		// Create the command line call
-		$command = 'java -jar '.escapeshellarg($yui).' --type js '.$options;
+		$command = 'java -jar '.escapeshellarg($yui).' --type '.$type.' '.$options;
 		
 		// Windows needs the whole command encased in quotes
 		if(KOHANA_IS_WIN)

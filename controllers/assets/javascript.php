@@ -108,17 +108,8 @@ class JavaScript_Controller extends Assets_Base_Controller {
 				
 			case 'yuicompressor':
 			
-				$options = '';
-				
-				foreach(array('nomunge', 'preserve-semi', 'disable-optimizations') as $option)
-				{
-					if ( ! empty($config[$option]))
-					{
-						$options .= ' --'.$option;
-					}
-				}
-				
-				return yuicompressor::compress($data, $options);
+				$options = isset($config['options']) ? $config['options'] : '';
+				return yuicompressor::compress($data, 'js', $options);
 				
 			
 			default:

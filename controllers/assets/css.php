@@ -37,6 +37,10 @@ class CSS_Controller extends Javascript_Controller {
 				$data = preg_replace('~[^{}]++\{\}~', '', $data);
 
 				return $data;
+			
+			case 'yuicompressor':
+				$options = isset($config['options']) ? $config['options'] : '';
+				return yuicompressor::compress($data, 'css', $options);
 				
 			default:
 				throw new Kohana_User_Exception('Unknown CSS Compression Type', 'Unknown type: '.$config['type']);
