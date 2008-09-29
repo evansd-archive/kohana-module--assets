@@ -1,5 +1,7 @@
 <?php
-// Kohana::__autoload can't figure this out by itself
+
+// We load the base class manually as Kohana::__autoload
+// won't find controllers in sub-directories
 include_once Kohana::find_file('controllers/assets', 'javascript', TRUE);
 
 class CSS_Controller extends Javascript_Controller {

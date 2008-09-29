@@ -51,7 +51,7 @@ class yuicompressor
 		// Close the process and check that it was successful
 		if(proc_close($process) != 0)
 		{
-			throw new Kohana_User_Exception('YUI Compressor Error', $error);
+			throw new Kohana_User_Exception('YUI Compressor Error', trim($error."\n\n".$output));
 		}
 		
 		return $output;
