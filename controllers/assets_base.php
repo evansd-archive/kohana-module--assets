@@ -1,25 +1,22 @@
 <?php
-abstract class Assets_Base_Controller extends Controller { // abstract because this class should never be instantiated, only subclassed
+abstract class Assets_Base_Controller extends Controller {
 	
-	/* caching options:
-		FALSE : don't cache
-		TRUE : use Kohana Cache library
-		'static' : cache permanently as a static file in DOCROOT - suitable for files that are hit frequently and change rarely e.g., css and javascript */
+	// Caching options: FALSE, TRUE and 'static'
 	public $cache = FALSE;
 	
-	// how long to cache server-side - has no effect when using 'static'
+	// How long to cache server-side
 	public $cache_lifetime = 1800;
 	
-	// how long to cache client-side
+	// How long to cache client-side
 	public $expiry_time = 1800;
 	
-	// tags for cached content
+	// Tags for cached content
 	public $cache_tags = array('assets');
 	
-	// default content type - will be determined from extension if left blank
+	// Default content type - will be determined from extension if left blank
 	public $content_type;
 	
-	// extension of requested file
+	// Extension of requested file
 	public $extension;
 
 
@@ -28,13 +25,13 @@ abstract class Assets_Base_Controller extends Controller { // abstract because t
 	{
 		parent::__construct();
 		
-		// get the extension
+		// Get the extension
 		$this->extension = pathinfo(url::current(), PATHINFO_EXTENSION);
 		
-		// add event after the constructor is finished, but before controller methods are called, to serve content from the cache if possible
+		// Add event after the constructor is finished, but before controller methods are called, to serve content from the cache if possible
 		Event::add('system.post_controller_constructor', array($this, '_serve_from_cache'));
 		
-		// add event to set the content-type and expiry time headers
+		// Add event to set the content-type and expiry time headers
 		Event::add('system.send_headers', array($this, '_send_headers'));
 	}
 
@@ -42,21 +39,27 @@ abstract class Assets_Base_Controller extends Controller { // abstract because t
 	
 	public function _serve_from_cache()
 	{
-		// check the expiry time in the request headers and just return Not Modified if appropriate
-		if($this->expiry_time) expires::check($this->expiry_time);
-			
-		if($this->cache AND $this->cache !== 'static') // if caching is turned on and we're using Kohana's cache library ...
+		// Check the expiry time in the request headers and just return Not Modified if appropriate
+		if ($this->expiry_time)
 		{
-			$content = Cache::instance()->get('assets.'.url::current()); // try to retrive it from the cache
+			expires::check($this->expiry_time);
+		}
+		
+		// If caching is turned on and we're using Kohana's cache library ...
+		if ($this->cache AND $this->cache !== 'static')
+		{
+			// Try to retrive it from the cache
+			$content = Cache::instance()->get('assets|'.url::current());
+			
 			if( ! empty($content))
 			{
-				echo $content; // serve the cached content ...
+				echo $content; // Serve the cached content ...
 				Kohana::shutdown(); // ... run the shutdown events
 				exit; // ... and bail out
 			}
 		}
 	
-		// add event to cache the output (we check whether caching is turned on at the final moment)
+		// Add event to cache the output (we check whether caching is turned on at the final moment)
 		Event::add('system.display', array($this, '_cache_output'));
 		
 	}
@@ -65,27 +68,29 @@ abstract class Assets_Base_Controller extends Controller { // abstract because t
 	
 	public function _cache_output()
 	{
-		if ($this->cache AND ! Kohana::$has_error)  // we don't cache if an error has occured
+		// We don't cache if an error has occured
+		if ($this->cache AND ! Kohana::$has_error)
 		{	
-			if($this->cache === 'static') // save the output in the DOCROOT so it can be served up as a static file
+			// Cache by saving the output in the DOCROOT so it can be served up as a static file
+			if ($this->cache === 'static')
 			{
-				$path = explode('/', url::current());
-			
-				$path = DOCROOT.DIRECTORY_SEPARATOR.join(DIRECTORY_SEPARATOR, $path);
+				// Translate URL into a pathname in DOCROOT
+				$path = DOCROOT.DIRECTORY_SEPARATOR.join(DIRECTORY_SEPARATOR, Router::$segments);
 				
 				$dir = dirname($path);
 				
 				// Disable error reporting
 				$ER = error_reporting(0);
 				
-				// attempt to make, recursively, all required directories
+				// Attempt to make, recursively, all required directories
 				mkdir($dir, 0775, TRUE);
 				
-				if(is_dir($dir) AND ! file_exists($path))
+				// If directory exists and we're not overwriting a file ...
+				if (is_dir($dir) AND ! file_exists($path))
 				{
 					if (file_put_contents($path, Event::$data))
 					{
-						 // read and write for owner and group, read for the rest
+						 // Set permissions: read and write for owner and group, read for the rest
 						chmod($path, 0664);
 					}
 				}
@@ -94,9 +99,11 @@ abstract class Assets_Base_Controller extends Controller { // abstract because t
 				error_reporting($ER);
 				
 			}
-			else // otherwise use Kohana's cache
+			
+			// Otherwise use Kohana's caching library
+			else
 			{
-				Cache::instance()->set('assets.'.url::current(), Event::$data, $this->cache_tags, $this->cache_lifetime);
+				Cache::instance()->set('assets|'.url::current(), Event::$data, $this->cache_tags, $this->cache_lifetime);
 			}
 		}
 		
@@ -106,16 +113,22 @@ abstract class Assets_Base_Controller extends Controller { // abstract because t
 	
 	public function _send_headers()
 	{
-		if( ! headers_sent() AND ! Kohana::$has_error) // we don't want to mess with the headers on error pages
+		// We don't want to mess with the headers on error pages
+		if ( ! headers_sent() AND ! Kohana::$has_error)
 		{
-			if(empty($this->content_type)) // if the mimetype isn't manually set ...
+			// If the mimetype isn't manually set ...
+			if (empty($this->content_type))
 			{
-				$mimes = Kohana::config('mimes.'.$this->extension); // get mimetype based on extension
-				$this->content_type = (isset($mimes[0])) ? $mimes[0] : 'application/octet-stream'; // use default if none found
+				// Get mimetype based on extension
+				$mimes = Kohana::config('mimes.'.$this->extension);
+				
+				// Use default if none found
+				$this->content_type = (isset($mimes[0])) ? $mimes[0] : 'application/octet-stream';
 			}
 			
 			header('Content-type: '.$this->content_type);
 			
+			// Set client-side caching time
 			if($this->expiry_time)
 			{
 				expires::set($this->expiry_time);
