@@ -6,15 +6,18 @@ include_once Kohana::find_file('controllers/assets', 'javascript', TRUE);
 
 class CSS_Controller extends Javascript_Controller {
 	
-	// the assets controller will figure this out from the extension, but we might as well save it the trouble
+	// The assets controller will figure this out from the extension, but we might as well save it the trouble
 	public $content_type = 'text/css';
 	
-	// directory where CSS files are stored, relative to APPROOT
+	// Directory where CSS files are stored, relative to APPROOT
 	public $directory = 'css';
 	
-	// config file to load
+	// Config file to load
 	public $config_file = 'css';
 	
+	// Don't disable short tags as they're unlikely to cause
+	// problems in CSS files and may be convenient
+	public $disable_short_tags = FALSE;
 	
 	
 	protected function _compress($data, $config)
