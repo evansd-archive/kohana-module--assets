@@ -53,6 +53,7 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		array_unshift($args, $method);
 		$path = join('/', $args);
 		
+		
 		if ($this->cascade_request)
 		{
 			// Strip the extension from the filepath
@@ -61,21 +62,36 @@ class JavaScript_Controller extends Assets_Base_Controller {
 			// Search for file using cascading file system
 			$file = Kohana::find_file($this->directory, $path, FALSE, $this->extension);
 		}
-		else
+		
+		// Check if the file exists in the application folder
+		elseif ( ! is_file($file = APPPATH.$this->directory.'/'.$path))
 		{
-			// Check if the file exists in the application folder
-			if ( ! is_file($file = APPPATH.$this->directory.'/'.$path))
-			{
-				$file = FALSE;
-			}
-			
+			$file = FALSE;			
 		}
+		
 		
 		// If file not found then display 404
 		if( ! $file) Event::run('system.404');
 		
+		
+		if ($this->disable_short_tags)
+		{
+			// Turn off short tags and ASP-style tags,
+			// keeping a record of original values 
+			$short_tags = ini_set('short_open_tag', 0);
+			$asp_tags = ini_set('asp_tags', 0);
+		}
+		
 		// Load the view in the controller for access to $this
 		$output = Kohana::$instance->_kohana_load_view($file, $this->vars);
+		
+		// If short_open_tag value was successfully changed ...
+		if (isset($short_tags) AND $short_tags !== FALSE)
+		{
+			// ...restore original values
+			ini_set('short_open_tag', $short_tags);
+			ini_set('asp_tags', $asp_tags);
+		}
 		
 		if( ! empty($this->compress))
 		{
@@ -90,14 +106,6 @@ class JavaScript_Controller extends Assets_Base_Controller {
 	
 	protected function requires($filename)
 	{
-		if ($this->disable_short_tags)
-		{
-			// Turn off short tags and ASP-style tags,
-			// keeping a record of original values 
-			$short_tags = ini_set('short_open_tag', 0);
-			$asp_tags = ini_set('asp_tags', 0);
-		}
-		
 		foreach(func_get_args() as $filename)
 		{
 			// If filename has extension ...
@@ -113,14 +121,6 @@ class JavaScript_Controller extends Assets_Base_Controller {
 			}
 			
 			include_once Kohana::find_file($this->directory, $filename, TRUE, $extension);
-		}
-		
-		// If short_open_tag value was successfully changed
-		if (isset($short_tags) AND $short_tags !== FALSE)
-		{
-			// Restore original values
-			ini_set('short_open_tag', $short_tags);
-			ini_set('asp_tags', $asp_tags);
 		}
 	}
 	
