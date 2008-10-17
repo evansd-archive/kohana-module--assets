@@ -2,6 +2,6 @@
 
 $config['_config'] = array(
 	
-	'cache' => IN_PRODUCTION ? 'static' : FALSE;	
+	'cache' => IN_PRODUCTION ? 'static' : FALSE,	
 	
 );
