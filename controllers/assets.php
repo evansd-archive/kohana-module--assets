@@ -1,9 +1,6 @@
 <?php
 class Assets_Controller extends Assets_Base_Controller
 {
-	public $routes = array();
-	
-	
 	public function __construct()
 	{
 		parent::__construct();
