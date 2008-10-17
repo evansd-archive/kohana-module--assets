@@ -53,13 +53,6 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		array_unshift($args, $method);
 		$path = join('/', $args);
 		
-		// This allows SWF files to be requested out of JavaScript modules
-		// Cascading is always used
-		if ($this->extension == 'swf')
-		{
-			return $this->output_static_file($path);
-		}
-		
 		if ($this->cascade_request)
 		{
 			// Strip the extension from the filepath
@@ -108,22 +101,6 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		
 	}
 	
-	
-	protected function output_static_file($path)
-	{
-		// We can't now assume that the content is javascript so
-		// we'll let assets_base work it out from the extension
-		unset($this->content_type);
-		
-		// Strip the extension from the filepath
-		$path = substr($path, 0, -strlen($this->extension) -1);
-			
-		// Search for file using cascading file system
-		$file = Kohana::find_file($this->directory, $path, FALSE, $this->extension) or Event::run('system.404');
-		
-		// Output the file
-		readfile($file);
-	}
 	
 	
 	protected function requires($filename)
