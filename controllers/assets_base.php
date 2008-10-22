@@ -10,6 +10,10 @@ abstract class Assets_Base_Controller extends Controller {
 	// How long to cache client-side
 	public $expiry_time = 1800;
 	
+	// Key used for setting and getting cached content
+	// By default constructer sets this based on hashed URL
+	public $cache_id;
+	
 	// Tags for cached content
 	public $cache_tags = array('assets');
 	
@@ -27,6 +31,9 @@ abstract class Assets_Base_Controller extends Controller {
 		
 		// Get the extension
 		$this->extension = pathinfo(url::current(), PATHINFO_EXTENSION);
+		
+		// Set the cache id based on the hash of the URL (with query)
+		$this->cache_id = 'cached_assets.'.sha1(url::current(TRUE));
 		
 		// Add event after the constructor is finished, but before controller methods are called, to serve content from the cache if possible
 		Event::add('system.post_controller_constructor', array($this, '_serve_from_cache'));
@@ -49,7 +56,7 @@ abstract class Assets_Base_Controller extends Controller {
 		if ($this->cache AND $this->cache !== 'static')
 		{
 			// Try to retrive it from the cache
-			$content = Cache::instance()->get('assets|'.url::current());
+			$content = Cache::instance()->get($this->cache_id);
 			
 			if( ! empty($content))
 			{
@@ -103,7 +110,7 @@ abstract class Assets_Base_Controller extends Controller {
 			// Otherwise use Kohana's caching library
 			else
 			{
-				Cache::instance()->set('assets|'.url::current(), Event::$data, $this->cache_tags, $this->cache_lifetime);
+				Cache::instance()->set($this->cache_id, Event::$data, $this->cache_tags, $this->cache_lifetime);
 			}
 		}
 		
