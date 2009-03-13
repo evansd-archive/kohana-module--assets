@@ -1,4 +1,9 @@
 <?php
+/**
+ * Copyright (c) 2008-2009 David Evans
+ * License: MIT-style (see license.txt)
+**/
+
 abstract class Assets_Base_Controller extends Controller {
 
 	// Caching options: FALSE, TRUE and 'static'
