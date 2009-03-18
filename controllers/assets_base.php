@@ -90,7 +90,7 @@ abstract class Assets_Base_Controller extends Controller {
 			// Cache by saving the output in the DOCROOT so it can be served up as a static file
 			if ($this->cache === 'static')
 			{
-				$this->_cache_in_docroot($path, Event::$data);
+				$this->_cache_in_docroot(url::current(), Event::$data);
 			}
 
 			// Otherwise use Kohana's caching library
