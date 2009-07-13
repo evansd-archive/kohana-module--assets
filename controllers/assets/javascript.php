@@ -34,11 +34,6 @@ class JavaScript_Controller extends Assets_Base_Controller {
 	// cascading filesystem.
 	public $cascade_request = TRUE;
 
-	// Disables short tags and ASP-style tags in included files
-	// to avoid accidentally triggering PHP mode
-	public $disable_short_tags = TRUE;
-
-
 
 	public function __construct()
 	{
@@ -78,24 +73,9 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		if( ! $file) Event::run('system.404');
 
 
-		if ($this->disable_short_tags)
-		{
-			// Turn off short tags and ASP-style tags,
-			// keeping a record of original values
-			$short_tags = ini_set('short_open_tag', 0);
-			$asp_tags = ini_set('asp_tags', 0);
-		}
-
 		// Load the view in the controller for access to $this
 		$output = Kohana::$instance->_kohana_load_view($file, $this->vars);
 
-		// If short_open_tag value was successfully changed ...
-		if (isset($short_tags) AND $short_tags !== FALSE)
-		{
-			// ...restore original values
-			ini_set('short_open_tag', $short_tags);
-			ini_set('asp_tags', $asp_tags);
-		}
 
 		if( ! empty($this->compress))
 		{

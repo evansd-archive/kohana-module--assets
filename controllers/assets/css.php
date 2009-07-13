@@ -19,10 +19,6 @@ class CSS_Controller extends Javascript_Controller {
 	// Config file to load
 	public $config_file = 'css';
 
-	// Don't disable short tags as they're unlikely to cause
-	// problems in CSS files and may be convenient
-	public $disable_short_tags = FALSE;
-
 
 	protected function _compress($data, $config)
 	{
