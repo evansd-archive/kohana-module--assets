@@ -20,7 +20,7 @@ class CSS_Controller extends Javascript_Controller {
 	public $config_file = 'css';
 
 
-	protected function _compress($data, $config)
+	protected function compress($data, $config)
 	{
 		switch($config === TRUE ? 'strip' : $config['type'])
 		{

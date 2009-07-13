@@ -79,7 +79,7 @@ class JavaScript_Controller extends Assets_Base_Controller {
 
 		if( ! empty($this->compress))
 		{
-			$output = $this->_compress($output, $this->compress);
+			$output = $this->compress($output, $this->compress);
 		}
 
 		echo $output;
@@ -127,7 +127,7 @@ class JavaScript_Controller extends Assets_Base_Controller {
 
 
 
-	protected function _compress($data, $config)
+	protected function compress($data, $config)
 	{
 		switch($config === TRUE ? 'jsmin' : $config['type'])
 		{
