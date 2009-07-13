@@ -72,9 +72,8 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		// If file not found then display 404
 		if( ! $file) Event::run('system.404');
 
-
-		// Load the view in the controller for access to $this
-		$output = Kohana::$instance->_kohana_load_view($file, $this->vars);
+		// Load file, along with all dependencies
+		$output = $this->load_and_process($file);
 
 
 		if( ! empty($this->compress))
@@ -85,46 +84,84 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		echo $output;
 
 	}
-
-
-
-	protected function requires($filename)
-	{
-		foreach(func_get_args() as $filename)
+	
+	
+	protected function load_and_process($file)
+	{	
+		list($content, $directives) = $this->parse_file($file);
+		
+		$includes = array();
+		
+		foreach($directives as $directive)
 		{
-			// If filename has extension ...
-			if ($extension = substr(strrchr($filename, '.'), 1))
+			list($command, $argument) = $directive;
+			
+			if($command == 'requires' OR $command == 'assumes')
 			{
-				// Get extension from filename
-				$filename = substr($filename, 0, -1 - strlen($extension));
+				$required_file = $this->parse_argument($argument, $file);
+				
+				if( ! in_array($required_file, $this->included_files))
+				{
+					if( ! is_file($required_file)) throw new Kohana_User_Exception('File Not Found', '<tt>'.$required_file.'</tt> does not exists (required by <tt>'.$file.'</tt>)');
+					$this->included_files[] = $required_file;
+					
+					if($command == 'requires')
+					{
+						$includes[] = $this->load_and_process($required_file);
+					}
+					// For assumed files, we load them so them so that they and their dependencies
+					// get added to the included_files list (and hence don't get included again later)
+					// but we discard the contents
+					else
+					{
+						$this->load_and_process($file);
+					}
+				}
 			}
-			else
-			{
-				// Use extension of the current request
-				$extension = $this->extension;
-			}
-
-			include_once Kohana::find_file($this->directory, $filename, TRUE, $extension);
 		}
+		
+		$includes[] = $content;
+		
+		return join("\n", $includes);
 	}
-
-
-
-	protected function assumes($filename)
+	
+	
+	protected function parse_file($filename)
 	{
-		// Start output buffer
-		ob_start();
+		// Load the view in the controller for access to $this
+		$content = Kohana::$instance->_kohana_load_view($filename, $this->vars);
+		
+		// Extract all directives
+		preg_match_all('#//= *([a-z]+) +(.*?) *\n#', $content, $matches, PREG_PATTERN_ORDER);
+		
+		// Transform into array of arrays of the form (<command>, <argument>)
+		$directives = array_map(NULL, $matches[1], $matches[2]);
 
-		foreach(func_get_args() as $filename)
-		{
-			// Include the assumed files, so they won't get included again
-			$this->requires($filename);
-		}
-
-		// Turn off output buffer and discard contents
-		ob_end_clean();
+		return array($content, $directives);
 	}
-
+	
+	
+	protected function parse_argument($argument, $context)
+	{
+		$first_char = $argument[0];
+		$file = trim($argument, '<>"');
+		
+		switch($first_char)
+		{
+			case '"':
+				$file = dirname($context).'/'.$file.'.'.$this->extension;
+				break;
+				
+			case '<':
+				$file = Kohana::find_file($this->directory, $file, FALSE, $this->extension);
+				break;
+			
+			default:
+				throw new Kohana_User_Exception('Invalid Argument in JavaScript Directive', '<tt>'.$argument.'</tt> in <tt>'.$context.'</tt> is not a valid argument');
+		}
+		
+		return realpath($file);
+	}
 
 
 	protected function compress($data, $config)
