@@ -33,7 +33,10 @@ class JavaScript_Controller extends Assets_Base_Controller {
 	// Note that calls to requires() and assumes() ALWAYS use the
 	// cascading filesystem.
 	public $cascade_request = TRUE;
-
+	
+	// List of files that have already been included so we can avoid
+	// including them twice
+	protected $included_files = array();
 
 	public function __construct()
 	{
