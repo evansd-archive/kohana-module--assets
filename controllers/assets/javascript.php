@@ -135,7 +135,7 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		$content = Kohana::$instance->_kohana_load_view($filename, $this->vars);
 		
 		// Extract all directives
-		preg_match_all('#//= *([a-z]+) +(.*?) *\n#', $content, $matches, PREG_PATTERN_ORDER);
+		preg_match_all('#//= *([a-z]+) +(.*?) *(\n|\r|$)#', $content, $matches, PREG_PATTERN_ORDER);
 		
 		// Transform into array of arrays of the form (<command>, <argument>)
 		$directives = array_map(NULL, $matches[1], $matches[2]);
