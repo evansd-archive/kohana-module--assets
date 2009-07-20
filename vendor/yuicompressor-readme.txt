@@ -1,5 +1,5 @@
 ==============================================================================
-YUI Compressor
+YUI Compressor v2.4.2
 ==============================================================================
 
 NAME
@@ -138,5 +138,3 @@ LICENSE
   YUI Compressor extends and implements code from Mozilla's Rhino project.
   Rhino is issued under the Mozilla Public License (MPL), and MPL applies
   to the Rhino source and binaries that are distributed with YUI Compressor.
-
-
