@@ -99,7 +99,7 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		{
 			list($command, $argument) = $directive;
 			
-			if($command == 'requires' OR $command == 'assumes')
+			if (in_array($command, array('require', 'requires', 'assume', 'assumes')))
 			{
 				$required_file = $this->parse_argument($argument, $file);
 				
@@ -108,7 +108,7 @@ class JavaScript_Controller extends Assets_Base_Controller {
 					if( ! is_file($required_file)) throw new Kohana_User_Exception('File Not Found', '<tt>'.$required_file.'</tt> does not exists (required by <tt>'.$file.'</tt>)');
 					$this->included_files[] = $required_file;
 					
-					if($command == 'requires')
+					if($command == 'require' OR $command == 'requires')
 					{
 						$includes[] = $this->load_and_process($required_file);
 					}
