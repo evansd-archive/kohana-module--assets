@@ -38,16 +38,16 @@ class JavaScript_Controller extends Assets_Base_Controller {
 	// including them twice
 	protected $included_files = array();
 
+
 	public function __construct()
 	{
 		parent::__construct();
 
 		foreach((array) Kohana::config($this->config_file, FALSE, FALSE) as $key => $value)
 		{
-			if(property_exists($this, $key)) $this->$key = $value;
+			if (property_exists($this, $key)) $this->$key = $value;
 		}
 	}
-
 
 
 	public function __call($method, $args)
