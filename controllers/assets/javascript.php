@@ -104,7 +104,7 @@ class JavaScript_Controller extends Assets_Base_Controller
 				
 				if( ! in_array($required_file, $this->included_files))
 				{
-					if( ! is_file($required_file)) throw new Kohana_User_Exception('File Not Found', '<tt>'.$required_file.'</tt> does not exists (required by <tt>'.$file.'</tt>)');
+					if( ! is_file($required_file)) throw new Kohana_User_Exception('File Not Found', '<tt>'.$argument.'</tt> does not exist (required by <tt>'.$file.'</tt>)');
 					$this->included_files[] = $required_file;
 					
 					if($command == 'require' OR $command == 'requires')
