@@ -116,7 +116,7 @@ class JavaScript_Controller extends Assets_Base_Controller
 					// but we discard the contents
 					else
 					{
-						$this->load_and_process($file);
+						$this->load_and_process($required_file);
 					}
 				}
 				
