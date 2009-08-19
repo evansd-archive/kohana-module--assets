@@ -4,8 +4,8 @@
  * License: MIT-style (see license.txt)
 **/
 
-class JavaScript_Controller extends Assets_Base_Controller {
-
+class JavaScript_Controller extends Assets_Base_Controller
+{
 	// The assets controller will figure this out from the
 	// extension, but we might as well save it the trouble
 	public $content_type = 'application/x-javascript';
@@ -91,17 +91,16 @@ class JavaScript_Controller extends Assets_Base_Controller {
 	
 	protected function load_and_process($file)
 	{	
-		list($content, $directives) = $this->parse_file($file);
+		list($lines, $directives) = $this->parse_file($file);
 		
-		$includes = array();
-		
-		foreach($directives as $directive)
+		foreach($directives as $index => $directive)
 		{
 			list($command, $argument) = $directive;
 			
 			if (in_array($command, array('require', 'requires', 'assume', 'assumes')))
 			{
 				$required_file = $this->parse_argument($argument, $file);
+				$required_content = '';
 				
 				if( ! in_array($required_file, $this->included_files))
 				{
@@ -110,7 +109,7 @@ class JavaScript_Controller extends Assets_Base_Controller {
 					
 					if($command == 'require' OR $command == 'requires')
 					{
-						$includes[] = $this->load_and_process($required_file);
+						$required_content = $this->load_and_process($required_file);
 					}
 					// For assumed files, we load them so them so that they and their dependencies
 					// get added to the included_files list (and hence don't get included again later)
@@ -120,12 +119,12 @@ class JavaScript_Controller extends Assets_Base_Controller {
 						$this->load_and_process($file);
 					}
 				}
+				
+				$lines[$index] = $required_content;
 			}
 		}
 		
-		$includes[] = $content;
-		
-		return join("\n", $includes);
+		return join("\n", $lines);
 	}
 	
 	
@@ -134,13 +133,20 @@ class JavaScript_Controller extends Assets_Base_Controller {
 		// Load the view in the controller for access to $this
 		$content = Kohana::$instance->_kohana_load_view($filename, $this->vars);
 		
-		// Extract all directives
-		preg_match_all('#//= *([a-z]+) +(.*?) *(\n|\r|$)#', $content, $matches, PREG_PATTERN_ORDER);
+		// Break into lines
+		$lines = explode("\n", $content);
 		
-		// Transform into array of arrays of the form (<command>, <argument>)
-		$directives = array_map(NULL, $matches[1], $matches[2]);
+		// Extract all directives
+		$directives = preg_grep('#^\s*//=#', $lines);
+		
+		// Parse each directive into array of the form (<command>, <argument>)
+		foreach($directives as $index => $directive)
+		{
+			preg_match('#^\s*//= *([a-z]+) +(.*?) *$#', $directive, $matches);
+			$directives[$index] = array_slice($matches, 1);
+		}
 
-		return array($content, $directives);
+		return array($lines, $directives);
 	}
 	
 	
