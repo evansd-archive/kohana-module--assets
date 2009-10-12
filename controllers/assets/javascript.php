@@ -158,7 +158,12 @@ class JavaScript_Controller extends Assets_Base_Controller
 		switch($first_char)
 		{
 			case '"':
-				$file = dirname($context).'/'.$file.'.'.$this->extension;
+				$file = $file.'.'.$this->extension;
+				// If it's a relative path prepend the current directory
+				if($file[0] != '/')
+				{
+					$file = dirname($context).'/'.$file;
+				}
 				break;
 				
 			case '<':
