@@ -22,17 +22,6 @@ class JavaScript_Controller extends Assets_Base_Controller
 
 	// Config file to load
 	public $config_file = 'javascript';
-
-	// Whether to use Kohana's cascading filesystem to
-	// attempt to find the requested file, or just to look
-	// in the application directory.
-	//
-	// You may wish to turn this off when in production to prevent
-	// people requesting random files from your Javascript modules.
-	//
-	// Note that calls to requires() and assumes() ALWAYS use the
-	// cascading filesystem.
-	public $cascade_request = TRUE;
 	
 	// List of files that have already been included so we can avoid
 	// including them twice
@@ -56,28 +45,15 @@ class JavaScript_Controller extends Assets_Base_Controller
 		array_unshift($args, $method);
 		$path = join('/', $args);
 
-		if ($this->cascade_request)
-		{
-			// Strip the extension from the filepath
-			$path = substr($path, 0, -strlen($this->extension) -1);
+		// Strip the extension from the filepath
+		$path = substr($path, 0, -strlen($this->extension) -1);
 
-			// Search for file using cascading file system
-			$file = Kohana::find_file($this->directory, $path, FALSE, $this->extension);
-		}
-
-		// Check if the file exists in the application folder
-		elseif ( ! is_file($file = APPPATH.$this->directory.'/'.$path))
-		{
-			$file = FALSE;
-		}
-
-
-		// If file not found then display 404
+		// Search for file using cascading file system
+		$file = Kohana::find_file($this->directory, $path, FALSE, $this->extension);
 		if( ! $file) Event::run('system.404');
 
 		// Load file, along with all dependencies
 		$output = $this->load_and_process($file);
-
 
 		if( ! empty($this->compress))
 		{
