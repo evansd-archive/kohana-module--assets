@@ -17,10 +17,6 @@ if ( ! IN_PRODUCTION)
 // While in production ...
 else
 {
-	// Allow only files in APPPATH/javascript to be requested directly
-	// Calls to requires() and assumes() will still cascade in the normal way
-	$config['cascade_request'] = FALSE;
-	
 	// Cache as a static file in DOCROOT/assets/javascript
 	$config['cache'] = 'static'; 
 	
@@ -30,7 +26,8 @@ else
 	// Clients should cache for 30 mins
 	$config['expiry_time'] = 1800;
 	
-	$config['compress'] = array(
+	$config['compress'] = array
+	(
 		'type' => 'jsmin' // - Reasonably safe, reasonably good compression
 		// 'type' => 'packer' // - Good compression, but careful with your semi-colons
 		// 'type' => 'yuicompressor' // - The best and safest compression, but requires Java
