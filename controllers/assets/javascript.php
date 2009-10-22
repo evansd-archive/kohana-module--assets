@@ -21,15 +21,12 @@ class JavaScript_Controller extends Assets_Base_Controller
 	// Compression settings - off by default
 	public $compress = FALSE;
 
-	// Config file to load
-	public $config_file = 'javascript';
-
 
 	public function __construct()
 	{
 		parent::__construct();
 
-		foreach((array) Kohana::config($this->config_file, FALSE, FALSE) as $key => $value)
+		foreach((array) Kohana::config('javascript', FALSE, FALSE) as $key => $value)
 		{
 			if (property_exists($this, $key)) $this->$key = $value;
 		}

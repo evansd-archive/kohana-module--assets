@@ -4,21 +4,190 @@
  * License: MIT-style (see license.txt)
 **/
 
-// We load the base class manually as Kohana::__autoload
-// won't find controllers in sub-directories
-include_once Kohana::find_file('controllers/assets', 'javascript', TRUE);
-
-class CSS_Controller extends Javascript_Controller {
-
+class CSS_Controller extends Assets_Base_Controller
+{
 	// The assets controller will figure this out from the extension, but we might as well save it the trouble
 	public $content_type = 'text/css';
 
-	// Directory where CSS files are stored, relative to APPROOT
+	// Directory where CSS files are stored, relative to
+	// application or module root
 	public $directory = 'css';
 
-	// Config file to load
-	public $config_file = 'css';
+	// Variables to be available to any PHP code embedded
+	// in the CSS files e.g., a $header_color
+	public $vars = array();
 
+	// Compression settings - off by default
+	public $compress = FALSE;
+	
+	// Whether to process @import statments and concatenate imported files
+	// into one single file for speedier loading
+	public $process_imports = FALSE;
+
+
+	public function __construct()
+	{
+		parent::__construct();
+
+		foreach((array) Kohana::config('css', FALSE, FALSE) as $key => $value)
+		{
+			if (property_exists($this, $key)) $this->$key = $value;
+		}
+	}
+
+
+	public function __call($method, $args)
+	{
+		// Concat all the arguments into a filepath
+		array_unshift($args, $method);
+		$path = join(DIRECTORY_SEPARATOR, $args);
+		
+		
+		// Straightforwarding loading of file
+		if ( ! $this->process_imports)
+		{
+			// Strip the extension from the filepath
+			$path = substr($path, 0, -strlen($this->extension) - 1);
+
+			// Search for file using cascading file system
+			$filename = Kohana::find_file($this->directory, $path, FALSE, $this->extension);
+			if( ! $filename) Event::run('system.404');
+			
+			$output = Kohana::$instance->_kohana_load_view($filename, $this->vars);
+		}
+		
+		// Process @import statements
+		else
+		{
+			$protocol = (empty($_SERVER['HTTPS']) OR $_SERVER['HTTPS'] === 'off') ? 'http' : 'https';
+			$this->site_domain = $protocol.'://'.$_SERVER['HTTP_HOST'];
+			// TODO: This needs to be worked out properly
+			$this->path_prefix = '/assets/css/';
+			
+			// Load file, along with all dependencies
+			$output = $this->import_and_process($this->path_prefix.$path);
+		}
+		
+		if( ! empty($this->compress))
+		{
+			$output = $this->compress($output, $this->compress);
+		}
+
+		echo $output;
+	}
+	
+	
+	protected function import_and_process($filename, &$imported_files = array())
+	{
+		// Load the file contents
+		$contents = $this->import_file($filename);
+		
+		// Set the base URL to the current file's URL
+		$this->set_base_url($this->get_absolute_url($filename));
+		
+		// Wrap bare @import strings with url()
+		$contents = preg_replace('/@import\s+"([^"]+)"/', '@import url("$1")', $contents);
+		
+		// Run regex callback to canonicalise all URLs
+		$contents = preg_replace_callback
+		(
+			'/url\(.*[^\\\]\)/',
+			array($this, 'canonicalise_url'),
+			$contents
+		);
+		
+		$lines = explode("\n", $contents);
+		$file = FALSE;
+		
+		foreach($lines as $index => $line)
+		{
+			if (preg_match('/^\s*@import\s+url\("([^"]+)"\)/', $line, $matches))
+			{
+				$file = $matches[1];
+				if ( ! in_array($file, $imported_files))
+				{
+					$imported_files[] = $file;
+					$lines[$index] = $this->import_and_process($file, $imported_files);
+				}
+			}
+		}
+		
+		return ($file === FALSE) ? $contents : join("\n", $lines);
+	}
+	
+	
+	protected function canonicalise_url($matches)
+	{
+		// We can guarantee URL begins 'url(' and terminates wtih ')'
+		$url = substr($matches[0], 4, -1);
+		$url = trim($url, '"\' ');
+		
+		// Join url with current base url (set before the regex replace
+		// is initiated)
+		$url = self::url_join($url, $this->base_url);
+		
+		if (self::startswith($url, $this->site_domain.'/'))
+		{
+			$url = substr($url, strlen($this->site_domain));
+		}
+		
+		return 'url("'.$url.'")';
+	}
+	
+	
+	protected function set_base_url($url)
+	{
+		$this->base_url = $url;
+	}
+	
+	
+	protected function import_file($url)
+	{
+		// Local file
+		if (self::startswith($url, $this->path_prefix))
+		{
+			// Strip off controller path
+			$path = substr($url, strlen($this->path_prefix));
+			
+			// Strip off extension
+			$last_dot = strrpos($path, '.');
+			$extension = substr($path, $last_dot +1);
+			$path = substr($path, 0, $last_dot);
+			
+			// Search include paths for file
+			$filename = Kohana::find_file($this->directory, $path, FALSE, $extension);
+			if( ! $filename) throw new Kohana_User_Exception('Missing CSS File', "Couldn't import <tt>$url</tt>");
+			
+			// Include file and return contents
+			return Kohana::$instance->_kohana_load_view($filename, $this->vars);
+		}
+		
+		// Remote file
+		else
+		{
+			$url = $this->get_absolute_url($url);
+			
+			$ER = error_reporting(0);
+			
+			$contents = file_get_contents($url);
+			
+			error_reporting($ER);
+			
+			if($contents === FALSE) throw new Kohana_User_Exception('Missing CSS File', "Couldn't import <tt>$url</tt>");
+			
+			return $content;
+		}
+	}
+	
+	
+	protected function get_absolute_url($url)
+	{
+		// This function assumes all URLs passed in will be in canonical
+		// form i.e., either a fully specified absolute URL or a URL
+		// relative to the current server route
+		return ($url[0] === '/') ? $this->site_domain.$url : $url;
+	}
+	
 
 	protected function compress($data, $config)
 	{
@@ -53,5 +222,72 @@ class CSS_Controller extends Javascript_Controller {
 				throw new Kohana_User_Exception('Unknown CSS Compression Type', 'Unknown type: '.$config['type']);
 		}
 	}
+	
+	
+	/* ----------------------
+	 * Utility functions
+	 * --------------------*/
+	
+	protected static function startswith($haystack, $needle)
+	{
+		return strncmp($haystack, $needle, strlen($needle)) === 0;
+	}
+	
+	
+	protected static function url_join($url, $base)
+	{
+		is_array($base) or $base = parse_url($base);
+		is_array($url)  or $url  = parse_url($url);
+			
+		if(isset($base['path']))
+		{
+			$path = explode('/', $base['path']);
+			$base['path'] = end($path);
+			$path[key($path)] = '';
+			$base['base'] = join('/', $path);
+		}
+		
+		if(isset($url['path']) AND $url['path'][0] == '/')
+		{
+			$url['base'] = $url['path'];
+			unset($url['path']);
+		}
+		
+		foreach(array('scheme', 'host', 'port', 'base', 'path', 'query', 'fragment') as $key)
+		{
+			if(isset($url[$key]))
+			{
+				$base[$key] = $url[$key];
+				$found = TRUE;
+			}
+			elseif( ! empty($found))
+			{
+				unset($base[$key]);	
+			}
+			
+		}
 
+		if(isset($base['base']))
+		{
+			$base['path'] = $base['base'] . @$base['path'];
+			unset($base['base']);
+		}
+		
+		return self::build_url($base);
+	}
+
+
+	protected static function build_url($parts)
+	{
+		$url = '';
+
+		if(isset($parts['scheme'])) $url .= $parts['scheme'] . '://';
+		if(isset($parts['host'])) $url .= $parts['host'];
+		if(isset($parts['port'])) $url .= ':' . $parts['port'];
+		if(isset($parts['path'])) $url .= $parts['path'];
+		if(isset($parts['query'])) $url .= '?' . $parts['query'];
+		if(isset($parts['fragment'])) $url .= '#' . $parts['fragment'];
+		
+		return $url;
+	}
 }
