@@ -213,11 +213,15 @@ class JavaScript_Controller extends Assets_Base_Controller
 
 	protected function compress($data, $config)
 	{
-		switch($config === TRUE ? 'jsmin' : $config['type'])
+		switch($config === TRUE ? 'jsminplus' : $config['type'])
 		{
 			case 'jsmin':
 				include_once Kohana::find_file('vendor', 'JSMin');
 				return JSMin::minify($data);
+				
+			case 'jsminplus':
+				include_once Kohana::find_file('vendor', 'jsminplus');
+				return JSMinPlus::minify($data);
 
 			case 'packer':
 				include_once Kohana::find_file('vendor', 'JavaScriptPacker');
