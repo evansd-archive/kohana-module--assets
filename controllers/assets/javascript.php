@@ -186,7 +186,7 @@ class JavaScript_Controller extends Assets_Base_Controller
 		
 		if (isset($cant_find))
 		{
-			throw new Kohana_User_Exception('Sprockets Missing File', "File <tt>$cant_find</tt> could not be found. (Required by <tt>$context</tt>)");
+			throw new Kohana_User_Exception('JavaScript Preprocessor Error', "File <tt>$cant_find</tt> could not be found. (Required by <tt>$context</tt>)");
 		}
 		
 		return realpath($file);
