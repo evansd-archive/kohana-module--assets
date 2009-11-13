@@ -4,8 +4,8 @@
  * License: MIT-style (see license.txt)
 **/
 
-abstract class Assets_Base_Controller extends Controller {
-
+abstract class Assets_Base_Controller extends Controller
+{
 	// Caching options: FALSE, TRUE and 'static'
 	public $cache = FALSE;
 
@@ -67,7 +67,7 @@ abstract class Assets_Base_Controller extends Controller {
 			// Try to retrive it from the cache
 			$content = Cache::instance()->get($this->cache_id);
 
-			if( ! empty($content))
+			if ( ! empty($content))
 			{
 				echo $content; // Serve the cached content ...
 				Kohana::shutdown(); // ... run the shutdown events
@@ -77,7 +77,6 @@ abstract class Assets_Base_Controller extends Controller {
 
 		// Add event to cache the output (we check whether caching is turned on at the final moment)
 		Event::add('system.display', array($this, '_cache_output'));
-
 	}
 
 
@@ -99,7 +98,6 @@ abstract class Assets_Base_Controller extends Controller {
 				Cache::instance()->set($this->cache_id, Event::$data, $this->cache_tags, $this->cache_lifetime);
 			}
 		}
-
 	}
 
 
@@ -122,7 +120,7 @@ abstract class Assets_Base_Controller extends Controller {
 			header('Content-type: '.$this->content_type);
 
 			// Set client-side caching time
-			if($this->expiry_time)
+			if ($this->expiry_time)
 			{
 				expires::set($this->expiry_time);
 			}
@@ -158,6 +156,4 @@ abstract class Assets_Base_Controller extends Controller {
 
 		return ! empty($success);
 	}
-
-
 }
