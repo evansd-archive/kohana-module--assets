@@ -1,37 +1,14 @@
 <?php
+// When in production, compress the resulting CSS
+$config['compress'] = IN_PRODUCTION;
 
-// While in development ...
-if ( ! IN_PRODUCTION)
-{
-	// Don't cache server-side
-	$config['cache'] = FALSE;
-	
-	// Don't allow clients to cache
-	$config['expiry_time'] = 0;
-	
-	// Don't compress
-	$config['compress'] = FALSE;
-}
+// When in production, load all @import'ed files and concat them into a
+// singe file for speedier loading
+$config['process_imports'] = IN_PRODUCTION;
 
-// While in production ...
-else
-{
-	// Load all @import'ed files and concat them into a singe file
-	// for  speedier loading
-	$config['process_imports'] = TRUE;
-	
-	// Cache as a static file in DOCROOT/assets/css
-	$config['cache'] = 'static'; 
-	
-	// Cache using Kohana's Cache library
-	// $config['cache'] = TRUE; 
-	
-	// Clients should cache for 30 mins
-	$config['expiry_time'] = 1800;
-	
-	$config['compress'] = array
-	(
-		'type' => 'strip' // - Borrowed from the old Kohana media module
-		// 'type' => 'yuicompressor' // - Requires Java
-	);
-}
+$config['compress_config'] = array
+(
+	'type' => 'strip'            // Borrowed from the old Kohana media module
+	// 'type' => 'yuicompressor' // Requires Java
+);
+

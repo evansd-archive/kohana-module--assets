@@ -17,8 +17,11 @@ class CSS_Controller extends Assets_Base_Controller
 	// in the CSS files e.g., a $header_color
 	public $vars = array();
 
-	// Compression settings - off by default
+	// Whether to compress output
 	public $compress = FALSE;
+	
+	// How to compress output
+	public $compress_config = array();
 	
 	// Whether to process @import statments and concatenate imported files
 	// into one single file for speedier loading
@@ -29,10 +32,17 @@ class CSS_Controller extends Assets_Base_Controller
 	{
 		parent::__construct();
 
-		foreach((array) Kohana::config('css', FALSE, FALSE) as $key => $value)
+		// Get config settings
+		$config = Kohana::config('css', FALSE, FALSE);
+		
+		// Support old API
+		if (isset($config['compress']) AND is_array($config['compress']))
 		{
-			if (property_exists($this, $key)) $this->$key = $value;
+			$config['compress_config'] = $config['compress'];
+			$config['compress'] = ! empty($config['compress']);
 		}
+
+		$this->apply_config($config);
 	}
 
 
@@ -68,9 +78,9 @@ class CSS_Controller extends Assets_Base_Controller
 			$output = $this->import_and_process($this->path_prefix.$path);
 		}
 		
-		if( ! empty($this->compress))
+		if ($this->compress)
 		{
-			$output = $this->compress($output, $this->compress);
+			$output = $this->compress($output, $this->compress_config);
 		}
 
 		echo $output;
@@ -191,7 +201,7 @@ class CSS_Controller extends Assets_Base_Controller
 
 	protected function compress($data, $config)
 	{
-		switch($config === TRUE ? 'strip' : $config['type'])
+		switch($config['type'])
 		{
 			case 'strip':
 				// Borrowed from the old Kohana media module:
