@@ -174,7 +174,7 @@ abstract class Assets_Base_Controller extends Controller
 			if (empty($this->content_type))
 			{
 				// Get mimetype based on extension
-				$mimes = Kohana::config('mimes.'.$this->extension);
+				$mimes = Kohana::config('mimes.'.strtolower($this->extension));
 
 				// Use default if none found
 				$this->content_type = (isset($mimes[0])) ? $mimes[0] : 'application/octet-stream';
