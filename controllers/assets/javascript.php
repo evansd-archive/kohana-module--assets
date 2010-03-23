@@ -23,6 +23,9 @@ class JavaScript_Controller extends Assets_Base_Controller
 	
 	// How to compress output
 	public $compress_config = array();
+	
+	// Paths where the preprocessor should look for JavaScript files
+	public $include_paths = array();
 
 
 	public function __construct()
@@ -56,16 +59,14 @@ class JavaScript_Controller extends Assets_Base_Controller
 		$filename = Kohana::find_file($this->directory, $path, FALSE, $this->extension);
 		if ( ! $filename) Event::run('system.404');
 		
-		// Construct an array of all the JavaScript directories
-		// in Kohana's include paths
-		$include_paths = array();
+		// Add all the module JavaScript directories to the include paths list
 		foreach(Kohana::include_paths() as $path)
 		{
-			$include_paths[] = $path.$this->directory.DIRECTORY_SEPARATOR;
+			$this->include_paths[] = $path.$this->directory;
 		}
 		
 		// Load file, along with all dependencies
-		$preprocessor = new JavaScriptPreprocessor($include_paths, $this->vars);
+		$preprocessor = new JavaScriptPreprocessor($this->include_paths, $this->vars);
 		$output = $preprocessor->requires($filename);
 		
 		// Compress JavaScript, if desired
