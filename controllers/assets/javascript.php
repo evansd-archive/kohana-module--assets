@@ -8,7 +8,7 @@ class JavaScript_Controller extends Assets_Base_Controller
 {
 	// The assets controller will figure this out from the
 	// extension, but we might as well save it the trouble
-	public $content_type = 'application/x-javascript';
+	public $content_type = 'application/javascript';
 
 	// Directory where JavaSript files are stored, relative to
 	// application or module root
